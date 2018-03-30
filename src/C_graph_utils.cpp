@@ -5,7 +5,7 @@
 #include "C_graph_algo.h"
 
 #define MAX_DEG 16
-#define TAU 0.60
+#define TAU 0.12
 
 int cmp(const void *a, const void *b) { return (*(int *)a) - (*(int *)b); }
 
@@ -152,35 +152,30 @@ void C_graph::calculateUpperBound(int k) {
 
   return;
 }
+
+void updateLCC(C_node &node, int n_common) {
+  if (node.degree > 1)
+    node.lcc *= node.degree * (node.degree - 1) / 2;
+  else
+    node.lcc = 0;
+  node.lcc += n_common;
+  node.lcc /= node.degree * (node.degree + 1) / 2;
+}
+
 void C_graph::updateForAnNewEdge(int u, int v) {
   int *common_neighbors = new int[nodes[u].degree];
   int n_common = returnCommonNeighbors(u, v, common_neighbors);
-  int i;
 
 // common neighbors;
-#pragma omp parallel for
-  for (i = 0; i < n_common; i++) {
-    // printf("\t%d %.2lf\n",
-    // common_neighbors[i],nodes[common_neighbors[i]].lcc);
+  for (int i = 0; i < n_common; i++) {
     nodes[common_neighbors[i]].lcc += 2.0 / nodes[common_neighbors[i]].degree /
                                       (nodes[common_neighbors[i]].degree - 1);
   }
+  delete []common_neighbors;
 
-  // u
-  if (nodes[u].degree > 1)
-    nodes[u].lcc *= nodes[u].degree * (nodes[u].degree - 1) / 2;
-  else
-    nodes[u].lcc = 0;
-  nodes[u].lcc += n_common;
-  nodes[u].lcc /= nodes[u].degree * (nodes[u].degree + 1) / 2;
-
-  // v
-  if (nodes[v].degree > 1)
-    nodes[v].lcc *= nodes[v].degree * (nodes[v].degree - 1) / 2;
-  else
-    nodes[v].lcc = 0;
-  nodes[v].lcc += n_common;
-  nodes[v].lcc /= nodes[v].degree * (nodes[v].degree + 1) / 2;
+  // update self
+  updateLCC(nodes[u], n_common);
+  updateLCC(nodes[v], n_common);
 
   return;
 }

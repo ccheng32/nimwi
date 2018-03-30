@@ -7,11 +7,8 @@ double C_graph::SIM(int k, char *output_file) {
   int current_max;
   FILE *fp;
 
-  clock_t t3, t2;
-
   fp = fopen(output_file, "w");
 
-  t2 = clock();
   for (i = 1; i <= k; i++) {
     current_max = 0;
     for (j = 0; j < max_node; j++) {
@@ -39,10 +36,7 @@ double C_graph::SIM(int k, char *output_file) {
     if (i % 100 == 0) {
       calculateAllNodeLCC();
     } else if (i % 1500 == 0) {
-      t3 = clock();
       calculateAllNodeLCC();
-      printf("SIM\t%d\t%.2lf\t%.2lf\n", i, returnMaxLCC(),
-             double(t3 - t2) / CLOCKS_PER_SEC);
     }
   }
 

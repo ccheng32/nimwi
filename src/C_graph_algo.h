@@ -3,7 +3,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
 
 int cmp(const void *a, const void *b);
 

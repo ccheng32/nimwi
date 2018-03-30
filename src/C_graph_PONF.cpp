@@ -9,11 +9,8 @@ double C_graph::PONF(int k, char *output_file) {
   int *v_m_opt_lit = new int[max_node + 1];
   FILE *fp;
 
-  clock_t t3, t2;
-
   fp = fopen(output_file, "w");
 
-  t2 = clock();
   for (i = 0; i < k; i++) {
     returnMaxLCC();
 
@@ -55,10 +52,7 @@ double C_graph::PONF(int k, char *output_file) {
     if (i % 100 == 0) {
       calculateAllNodeLCC();
     } else if (i % 1500 == 0) {
-      t3 = clock();
       calculateAllNodeLCC();
-      printf("PONF\t%d\t%.2lf\t%.2lf\n", i, returnMaxLCC(),
-             double(t3 - t2) / CLOCKS_PER_SEC);
     }
 
     // test();
