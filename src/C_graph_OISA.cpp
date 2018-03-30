@@ -41,7 +41,7 @@ double C_graph::OISA(int k, char *output_file) {
     }
 
     if (k_G < 2 * k && k_G > 0) {
-      sprintf(file_name, "%.2lf_%s", l, output_file);
+      sprintf(file_name, "%s", output_file);
       return_ = PONF(k, file_name);
 
       if (return_ < min_max_lcc) {
