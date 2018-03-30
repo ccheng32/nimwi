@@ -1,19 +1,15 @@
-DEBUG=y
-STDFLAG=--std=c++11
-CUDAPATH=/usr/local/cuda
-CUDALIB=-L$(CUDAPATH)/lib64/ -lcuda -lcudart
-NVCC=$(CUDAPATH)/bin/nvcc
-CUDACC=sm_61
+SRC_FILES := $(wildcard *.cpp)
+OBJ_FILES := $(patsubst %.cpp,%.o,$(SRC_FILES))
+CPPFLAGS=-fopenmp --std=c++11 -Wall
+LDFLAGS=
 
-ifeq ($(DEBUG),n)
-	OPTFLAG= -O3
-else
-	OPTFLAG= -O0 -g -DDEBUG
-	CUDADEBUGFLAG = -G
-endif
 
-nimwi: nimwi.cpp
-	g++ -fopenmp $(STDFLAG) $(OPTFLAG) -Wall nimwi.cpp $(CUDALIB) -o nimwi
+
+main: $(OBJ_FILES)
+	g++ $(CPPFLAGS) $(LDFLAGS) -o $@ $^
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	g++ $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	rm -f nimwi *.o
+	rm -f main *.o
