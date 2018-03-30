@@ -756,10 +756,9 @@ int main(int argc, char **argv) {
   clock_t t2, t3;
   char output_file_name[64];
 
-  if (argc != 5) {
+  if (argc != 6) {
     printf(
-        "USAGE: <executable-file> <algorithm> <input-network> <lcc-file> "
-        "<k>\n");
+        "USAGE: <executable-file> <algorithm> <input-network> <lcc-file> <k> <output-file>\n");
     return 0;
   }
 
@@ -767,7 +766,7 @@ int main(int argc, char **argv) {
   sscanf(argv[4], "%d", &k);
   // graph.calculateAllNodeLCC();
   graph.inputLCC(argv[3]);
-  sprintf(output_file_name, "%s_%s_%d.txt", argv[1], argv[2], k);
+  sprintf(output_file_name, "%s", argv[5]);
   // graph.calculateUpperBound(k);
   printf("initialization done %s\n", output_file_name);
 

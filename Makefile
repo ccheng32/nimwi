@@ -1,4 +1,4 @@
-DEBUG=n
+DEBUG=y
 STDFLAG=--std=c++11
 CUDAPATH=/usr/local/cuda
 CUDALIB=-L$(CUDAPATH)/lib64/ -lcuda -lcudart
