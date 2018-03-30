@@ -20,4 +20,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	g++ $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	rm -f main ./obj/*.o
+	rm -rf main ./obj/*.o

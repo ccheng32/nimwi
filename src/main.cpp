@@ -29,22 +29,7 @@ int main(int argc, char **argv) {
   printf("initialization done %s\n", output_file_name);
 
   t2 = clock();
-  if (strcmp(argv[1], "PONF") == 0) {
-    // printf("***method ponf\n");
-    obj = graph.PONF(k, output_file_name);
-  } else if (strcmp(argv[1], "OISA") == 0) {
-    // printf("***method ponf\n");
-    obj = graph.OISA(k, output_file_name);
-  } else if (strcmp(argv[1], "SIM") == 0) {
-    // printf("***method sim\n");
-    obj = graph.SIM(k, output_file_name);
-  } else if (strcmp(argv[1], "BUM") == 0) {
-    // printf("***method bum\n");
-    obj = graph.BUM(k, output_file_name);
-  } else {
-    // printf("method wrong; re enter\n");
-    return 0;
-  }
+  graph.nimwi(argv[1], k, output_file_name);
   t3 = clock();
 
   // graph.test();
