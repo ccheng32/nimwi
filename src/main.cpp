@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   char output_file_name[64];
   C_graph graph;
 
-  if (argc != 6) {
+  if (argc != 5) {
     printf(
         "USAGE: <executable-file> <algorithm> <input-network> <k> "
         "<output-file>\n");
