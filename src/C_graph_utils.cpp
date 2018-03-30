@@ -2,42 +2,36 @@
 #include <cstring>
 #include "C_graph_algo.h"
 
-#define MAX_DEG 10000
-#define TAU 0.6
+#define MAX_DEG 16
+#define TAU 0.60
 
 int cmp(const void *a, const void *b) { return (*(int *)a) - (*(int *)b); }
 
+static void createNode (int id, int &max_node, int &num_nodes, C_node* nodes) {
+  if (!nodes[id].is_existed) {
+    num_nodes++;
+    nodes[id].is_existed = 1;
+    nodes[id].neighbors = new int[MAX_DEG];
+    if (id > max_node) {
+      max_node = id;
+    }
+  } else if (nodes[id].length_neighbor == nodes[id].degree) {
+    int new_neighbor_length = nodes[id].degree << 1;
+    int *new_neighbors = new int[new_neighbor_length];
+    memset(new_neighbors, 0x00, sizeof(int) * (new_neighbor_length));
+    memcpy(new_neighbors, nodes[id].neighbors,
+           sizeof(int) * (nodes[id].degree));
+    nodes[id].length_neighbor = new_neighbor_length;
+
+    delete[] nodes[id].neighbors;
+    nodes[id].neighbors = new_neighbors;
+  }
+}
+
 void C_graph::addEdge(int id_1, int id_2) {
-  if (!nodes[id_1].is_existed) {
-    nodes[id_1].is_existed = 1;
-    nodes[id_1].neighbors = new int[MAX_DEG];
-    if (id_1 > max_node) max_node = id_1;
 
-  } else if (nodes[id_1].length_neighbor == nodes[id_1].degree) {
-    int *new_neighbors = new int[nodes[id_1].degree + 10000];
-    memset(new_neighbors, 0x00, sizeof(int) * (nodes[id_1].degree + 10000));
-    memcpy(new_neighbors, nodes[id_1].neighbors,
-           sizeof(int) * (nodes[id_1].degree));
-    nodes[id_1].length_neighbor = nodes[id_1].degree + 10000;
-
-    delete[] nodes[id_1].neighbors;
-    nodes[id_1].neighbors = new_neighbors;
-  }
-
-  if (!nodes[id_2].is_existed) {
-    nodes[id_2].is_existed = 1;
-    nodes[id_2].neighbors = new int[MAX_DEG];
-    if (id_2 > max_node) max_node = id_2;
-  } else if (nodes[id_2].length_neighbor == nodes[id_2].degree) {
-    int *new_neighbors = new int[nodes[id_2].degree + 10000];
-    memset(new_neighbors, 0x00, sizeof(int) * (nodes[id_2].degree + 10000));
-    memcpy(new_neighbors, nodes[id_2].neighbors,
-           sizeof(int) * (nodes[id_2].degree));
-    nodes[id_2].length_neighbor = nodes[id_2].degree + 10000;
-
-    delete[] nodes[id_1].neighbors;
-    nodes[id_1].neighbors = new_neighbors;
-  }
+  createNode(id_1, max_node, num_nodes, nodes);
+  createNode(id_2, max_node, num_nodes, nodes);
 
   nodes[id_2].neighbors[nodes[id_2].degree++] = id_1;
   nodes[id_1].neighbors[nodes[id_1].degree++] = id_2;

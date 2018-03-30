@@ -5,6 +5,7 @@ C_graph::C_graph() {
   max_node = 0;
   max_lcc = 0;
   nodes = new C_node[MAX_ID]();
+  num_nodes = 0;
 }
 
 C_graph::~C_graph() {

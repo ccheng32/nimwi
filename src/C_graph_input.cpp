@@ -20,6 +20,17 @@ void C_graph::inputGraph(char file_name[]) {
       qsort(nodes[i].neighbors, nodes[i].degree, sizeof(int), cmp);
     }
   }
+
+  for (int i = 0; i < num_nodes; i++) {
+    printf("%d:", i);
+    if (nodes[i].is_existed) {
+      for (int j = 0; j < nodes[i].degree; j++) {
+        printf(" %d", nodes[i].neighbors[j]);
+      }
+    }
+    printf("\n");
+  }
+
   return;
 }
 

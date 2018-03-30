@@ -20,6 +20,7 @@ class C_graph {
   int max_node;
   double max_lcc;
   C_node *nodes;
+  int num_nodes;
   void addEdge(int id_1, int id_2);
 
   // nimwi algos
