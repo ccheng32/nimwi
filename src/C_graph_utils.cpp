@@ -1,5 +1,7 @@
-#include "C_graph.h"
 #include <cstring>
+#include <unordered_set>
+
+#include "C_graph.h"
 #include "C_graph_algo.h"
 
 #define MAX_DEG 16
@@ -7,7 +9,7 @@
 
 int cmp(const void *a, const void *b) { return (*(int *)a) - (*(int *)b); }
 
-static void createNode (int id, int &max_node, int &num_nodes, C_node* nodes) {
+static void createNode(int id, int &max_node, int &num_nodes, C_node *nodes) {
   if (!nodes[id].is_existed) {
     num_nodes++;
     nodes[id].is_existed = 1;
@@ -29,7 +31,6 @@ static void createNode (int id, int &max_node, int &num_nodes, C_node* nodes) {
 }
 
 void C_graph::addEdge(int id_1, int id_2) {
-
   createNode(id_1, max_node, num_nodes, nodes);
   createNode(id_2, max_node, num_nodes, nodes);
 
@@ -63,37 +64,31 @@ int C_graph::returnCommonNeighbors(int u, int v, int *common_neighbors) {
 }
 
 double C_graph::calculateOneNodeLCC(int id) {
-  int pi, pn;
-  int count = 0;
+  // # of possible edges between neighbors
+  double node_degree = (double)nodes[id].degree;
+  double max_num_edges = node_degree * (node_degree - 1) / 2.0;
+  double exist_num_edges = 0.0;
 
-  if (nodes[id].degree == 1) {
-    nodes[id].lcc = 0;
-    // return nodes[id].lcc;
-  } else {
-    for (int i = 0; i < nodes[id].degree; i++) {
-      int neighbor = nodes[id].neighbors[i];
-      pi = 0;  // id
-      pn = 0;  // neighbor[i]
-      // check the overlap of neighbor lists of neighbor[i] and id
-
-      while (pi < nodes[id].degree && pn < nodes[neighbor].degree) {
-        // printf("\t%d %d\n", pi, pn);
-        if (nodes[id].neighbors[pi] == nodes[neighbor].neighbors[pn]) {
-          pi++;
-          pn++;
-          count++;
-        } else if (nodes[id].neighbors[pi] < nodes[neighbor].neighbors[pn]) {
-          pi++;
-        } else {
-          pn++;
-        }
-      }
-      // printf("i %d  neighbor %d count %d\n", id, neighbor, count);
-    }
-
-    nodes[id].lcc = double(count) / nodes[id].degree / (nodes[id].degree - 1);
-    // printf("id %d, lcc %lf %d\n", id, nodes[id].lcc, count);
+  // create set of neighbors
+  std::unordered_set<int> neighbors;
+  for (int j = 0; j < nodes[id].degree; j++) {
+    neighbors.insert(nodes[id].neighbors[j]);
   }
+
+  // traverse every neighbor's neighbors to see if the
+  // edges match
+  for (int neighbor_id : neighbors) {
+    int *neighbors_neighbors = nodes[neighbor_id].neighbors;
+    int num_neighbors_neighbors = nodes[neighbor_id].degree;
+    for (int k = 0; k < num_neighbors_neighbors; k++) {
+      if (neighbors_neighbors[k] < neighbor_id &&
+          neighbors.find(neighbors_neighbors[k]) != neighbors.end()) {
+        exist_num_edges += 1.0;
+      }
+    }
+  }
+
+  nodes[id].lcc = exist_num_edges / max_num_edges;
   return nodes[id].lcc;
 }
 

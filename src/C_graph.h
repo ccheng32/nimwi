@@ -11,7 +11,6 @@ class C_graph {
 
   // read input from files
   void inputGraph(char file_name[]);
-  void inputLCC(char file_name[]);
 
   // NIMWI algorithm dispatcher
   double nimwi(char *algo, int k, char *output_file_name);
@@ -23,6 +22,8 @@ class C_graph {
   int num_nodes;
   void addEdge(int id_1, int id_2);
 
+  void initLCC();
+
   // nimwi algos
   double OISA(int k, char *output_file);
   double SIM(int k, char *output_file);
@@ -33,9 +34,8 @@ class C_graph {
   // common_neighbors
   int returnCommonNeighbors(int u, int v, int *common_neighbors);
 
-  double calculateOneNodeLCC(int id);
-
   void calculateAllNodeLCC();
+  double calculateOneNodeLCC(int id);
 
   double returnMaxLCC();
 

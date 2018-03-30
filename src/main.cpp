@@ -15,16 +15,14 @@ int main(int argc, char **argv) {
 
   if (argc != 6) {
     printf(
-        "USAGE: <executable-file> <algorithm> <input-network> <lcc-file> <k> "
+        "USAGE: <executable-file> <algorithm> <input-network> <k> "
         "<output-file>\n");
     return 0;
   }
 
   graph.inputGraph(argv[2]);
-  sscanf(argv[4], "%d", &k);
-  // graph.calculateAllNodeLCC();
-  graph.inputLCC(argv[3]);
-  sprintf(output_file_name, "%s", argv[5]);
+  sscanf(argv[3], "%d", &k);
+  sprintf(output_file_name, "%s", argv[4]);
   // graph.calculateUpperBound(k);
   printf("initialization done %s\n", output_file_name);
 
