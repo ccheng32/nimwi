@@ -4,6 +4,18 @@
 #include "C_node.h"
 
 class C_graph {
+ public:
+  // constructor destructors
+  C_graph();
+  ~C_graph();
+
+  // read input from files
+  void inputGraph(char file_name[]);
+  void inputLCC(char file_name[]);
+
+  // NIMWI algorithm dispatcher
+  double nimwi(char *algo, int k, char *output_file_name);
+
  private:
   int max_node;
   double max_lcc;
@@ -15,15 +27,6 @@ class C_graph {
   double SIM(int k, char *output_file);
   double PONF(int k, char *output_file);
   double BUM(int k, char *output_file);
-
- public:
-  // read input from files
-  void inputGraph(char file_name[]);
-  void inputLCC(char file_name[]);
-
-  // constructor destructors
-  C_graph();
-  ~C_graph();
 
   // return value is the number of common neighbors, neighbors are stored in
   // common_neighbors
@@ -50,9 +53,6 @@ class C_graph {
   int returnOptionality(int id, int *optional);
 
   int returnOptionality(int id);
-
-  // NIMWI algorithm dispatcher
-  double nimwi(char *algo, int k, char *output_file_name);
 
   void test();
 };
