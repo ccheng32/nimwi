@@ -4,29 +4,16 @@
 #include "C_graph.h"
 #include "C_graph_algo.h"
 
-#define MAX_DEG 16
+#define MAX_DEG 2
 #define TAU 0.12
 
 int cmp(const void *a, const void *b) { return (*(int *)a) - (*(int *)b); }
 
 static void createNode(int id, int &max_node, int &num_nodes, C_node *nodes) {
-  if (!nodes[id].is_existed) {
-    num_nodes++;
-    nodes[id].is_existed = 1;
-    nodes[id].neighbors = new int[MAX_DEG];
-    if (id > max_node) {
-      max_node = id;
-    }
-  } else if (nodes[id].length_neighbor == nodes[id].degree) {
-    int new_neighbor_length = nodes[id].degree << 1;
-    int *new_neighbors = new int[new_neighbor_length];
-    memset(new_neighbors, 0x00, sizeof(int) * (new_neighbor_length));
-    memcpy(new_neighbors, nodes[id].neighbors,
-           sizeof(int) * (nodes[id].degree));
-    nodes[id].length_neighbor = new_neighbor_length;
-
-    delete[] nodes[id].neighbors;
-    nodes[id].neighbors = new_neighbors;
+  num_nodes++;
+  nodes[id].is_existed = 1;
+  if (id > max_node) {
+    max_node = id;
   }
 }
 
@@ -34,55 +21,46 @@ void C_graph::addEdge(int id_1, int id_2) {
   createNode(id_1, max_node, num_nodes, nodes);
   createNode(id_2, max_node, num_nodes, nodes);
 
-  nodes[id_2].neighbors[nodes[id_2].degree++] = id_1;
-  nodes[id_1].neighbors[nodes[id_1].degree++] = id_2;
-
-  // printf("%d %d %d %d\n", id_1,nodes[id_1].degree, id_2,
-  // nodes[id_2].degree);
+  nodes[id_2].addNeighbor(id_1);
+  nodes[id_1].addNeighbor(id_2);
   return;
 }
 
 int C_graph::returnCommonNeighbors(int u, int v, int *common_neighbors) {
-  int pu, pv;
   int count = 0;
-  pu = 0;  // id
-  pv = 0;  // neighbor[i]
-  // check the overlap of neighbor lists of u and v
-  while (pu < nodes[u].degree && pv < nodes[v].degree) {
-    if (nodes[u].neighbors[pu] == nodes[v].neighbors[pv]) {
-      common_neighbors[count++] = nodes[u].neighbors[pu];
-      pu++;
-      pv++;
-    } else if (nodes[u].neighbors[pu] < nodes[v].neighbors[pv]) {
-      pu++;
-    } else {
-      pv++;
+  int iternode = nodes[u].degree() < nodes[v].degree() ? u : v;
+  int targetnode = iternode == v ? u : v;
+
+  for (auto x = nodes[iternode].first_neighbor();
+       x != nodes[iternode].last_neighbor(); x++) {
+    if (nodes[targetnode].hasNeighbor(*x)) {
+      common_neighbors[count] = *x;
+      count++;
     }
   }
 
   return count;
 }
-
 double C_graph::calculateOneNodeLCC(int id) {
+  if (nodes[id].degree() == 1) {
+    nodes[id].lcc = 1.0;
+    return nodes[id].lcc;
+  }
+
   // # of possible edges between neighbors
-  double node_degree = (double)nodes[id].degree;
+  double node_degree = (double)nodes[id].degree();
   double max_num_edges = node_degree * (node_degree - 1) / 2.0;
   double exist_num_edges = 0.0;
 
-  // create set of neighbors
-  std::unordered_set<int> neighbors;
-  for (int j = 0; j < nodes[id].degree; j++) {
-    neighbors.insert(nodes[id].neighbors[j]);
-  }
-
   // traverse every neighbor's neighbors to see if the
   // edges match
-  for (int neighbor_id : neighbors) {
-    int *neighbors_neighbors = nodes[neighbor_id].neighbors;
-    int num_neighbors_neighbors = nodes[neighbor_id].degree;
-    for (int k = 0; k < num_neighbors_neighbors; k++) {
-      if (neighbors_neighbors[k] < neighbor_id &&
-          neighbors.find(neighbors_neighbors[k]) != neighbors.end()) {
+  for (auto neighbor_id = nodes[id].first_neighbor();
+       neighbor_id != nodes[id].last_neighbor(); neighbor_id++) {
+    for (auto neighbors_neighbor = nodes[*neighbor_id].first_neighbor();
+         neighbors_neighbor != nodes[*neighbor_id].last_neighbor();
+         neighbors_neighbor++) {
+      if (*neighbors_neighbor < *neighbor_id &&
+          nodes[id].hasNeighbor(*neighbors_neighbor)) {
         exist_num_edges += 1.0;
       }
     }
@@ -97,7 +75,6 @@ void C_graph::calculateAllNodeLCC() {
   for (id = 0; id <= max_node; id++) {
     if (nodes[id].is_existed) {
       calculateOneNodeLCC(id);
-      // printf("id %d, lcc %.2lf %d\n", id, nodes[id].lcc, nodes[id].degree);
       if (nodes[id].lcc >= max_lcc) max_lcc = nodes[id].lcc;
     }
   }
@@ -113,7 +90,6 @@ double C_graph::returnMaxLCC() {
   for (id = 0; id <= max_node; id++) {
     if (nodes[id].lcc > 1) {
       calculateOneNodeLCC(id);
-      // printf("id %d");
     }
   }
 
@@ -135,14 +111,15 @@ void C_graph::calculateUpperBound(int k) {
     if (nodes[id].is_existed) {
       nodes[id].upper_bound = new double[k + 1];
 
-      int count = nodes[id].lcc * nodes[id].degree * (nodes[id].degree - 1) / 2;
+      int count =
+          nodes[id].lcc * nodes[id].degree() * (nodes[id].degree() - 1) / 2;
 
       for (i = 0; i <= k; i++) nodes[id].upper_bound[i] = 0;
 
       for (k1 = 0; k1 <= k; k1++) {
         for (i = k1; i <= k; i++) {
-          current = (count + (i - k1) + k1 * nodes[id].degree) /
-                    (nodes[id].degree + k) / (nodes[id].degree + k - 1) * 2;
+          current = (count + (i - k1) + k1 * nodes[id].degree()) /
+                    (nodes[id].degree() + k) / (nodes[id].degree() + k - 1) * 2;
           if (current > nodes[id].upper_bound[i])
             nodes[id].upper_bound[i] = current;
         }
@@ -154,24 +131,25 @@ void C_graph::calculateUpperBound(int k) {
 }
 
 void updateLCC(C_node &node, int n_common) {
-  if (node.degree > 1)
-    node.lcc *= node.degree * (node.degree - 1) / 2;
+  if (node.degree() > 1)
+    node.lcc *= node.degree() * (node.degree() - 1) / 2;
   else
     node.lcc = 0;
   node.lcc += n_common;
-  node.lcc /= node.degree * (node.degree + 1) / 2;
+  node.lcc /= node.degree() * (node.degree() + 1) / 2;
 }
 
 void C_graph::updateForAnNewEdge(int u, int v) {
-  int *common_neighbors = new int[nodes[u].degree];
+  int *common_neighbors = new int[nodes[u].degree()];
   int n_common = returnCommonNeighbors(u, v, common_neighbors);
 
-// common neighbors;
+  // common neighbors;
   for (int i = 0; i < n_common; i++) {
-    nodes[common_neighbors[i]].lcc += 2.0 / nodes[common_neighbors[i]].degree /
-                                      (nodes[common_neighbors[i]].degree - 1);
+    nodes[common_neighbors[i]].lcc += 2.0 /
+                                      nodes[common_neighbors[i]].degree() /
+                                      (nodes[common_neighbors[i]].degree() - 1);
   }
-  delete []common_neighbors;
+  delete[] common_neighbors;
 
   // update self
   updateLCC(nodes[u], n_common);
@@ -180,7 +158,7 @@ void C_graph::updateForAnNewEdge(int u, int v) {
   return;
 }
 void C_graph::updateForAnNewEdgeA(int u, int v, int k) {
-  int *common_neighbors = new int[nodes[u].degree];
+  int *common_neighbors = new int[nodes[u].degree()];
   int n_common = returnCommonNeighbors(u, v, common_neighbors);
   int i;
 
@@ -190,9 +168,9 @@ void C_graph::updateForAnNewEdgeA(int u, int v, int k) {
     // printf("\t%d %.2lf\n",
     // common_neighbors[i],nodes[common_neighbors[i]].lcc);
     if (nodes[common_neighbors[i]].upper_bound[k] > max_lcc) {
-      nodes[common_neighbors[i]].lcc += 2.0 /
-                                        nodes[common_neighbors[i]].degree /
-                                        (nodes[common_neighbors[i]].degree - 1);
+      nodes[common_neighbors[i]].lcc +=
+          2.0 / nodes[common_neighbors[i]].degree() /
+          (nodes[common_neighbors[i]].degree() - 1);
       nodes[common_neighbors[i]].is_updated = 1;
       if (nodes[common_neighbors[i]].lcc > max_lcc)
         max_lcc = nodes[common_neighbors[i]].lcc;
@@ -205,10 +183,10 @@ void C_graph::updateForAnNewEdgeA(int u, int v, int k) {
 
   // u
   if (nodes[u].upper_bound[k] > max_lcc) {
-    if (nodes[u].degree > 1)
-      nodes[u].lcc *= nodes[u].degree * (nodes[u].degree - 1) / 2;
+    if (nodes[u].degree() > 1)
+      nodes[u].lcc *= nodes[u].degree() * (nodes[u].degree() - 1) / 2;
     nodes[u].lcc += n_common;
-    nodes[u].lcc /= nodes[u].degree * (nodes[u].degree + 1) / 2;
+    nodes[u].lcc /= nodes[u].degree() * (nodes[u].degree() + 1) / 2;
     if (nodes[u].lcc > max_lcc) max_lcc = nodes[u].lcc;
     nodes[v].is_updated = 0;
 
@@ -219,10 +197,10 @@ void C_graph::updateForAnNewEdgeA(int u, int v, int k) {
 
   // v
   if (nodes[v].upper_bound[k] > max_lcc) {
-    if (nodes[v].degree > 1)
-      nodes[v].lcc *= nodes[v].degree * (nodes[v].degree - 1) / 2;
+    if (nodes[v].degree() > 1)
+      nodes[v].lcc *= nodes[v].degree() * (nodes[v].degree() - 1) / 2;
     nodes[v].lcc += n_common;
-    nodes[v].lcc /= nodes[v].degree * (nodes[v].degree + 1) / 2;
+    nodes[v].lcc /= nodes[v].degree() * (nodes[v].degree() + 1) / 2;
     if (nodes[v].lcc > max_lcc) max_lcc = nodes[v].lcc;
     nodes[v].is_updated = 1;
   } else {
@@ -235,7 +213,7 @@ void C_graph::updateForAnNewEdgeA(int u, int v, int k) {
 int C_graph::returnFarthestNodeFrom(int id) {
   int *visited = new int[max_node + 1];
   int *queue = new int[max_node + 1];
-  int head, tail, current, i;
+  int head, tail, current;
 
   // unvisited = -1!!!
   memset(visited, 0xFF, sizeof(int) * (max_node + 1));
@@ -246,11 +224,11 @@ int C_graph::returnFarthestNodeFrom(int id) {
   visited[id] = 0;
   while (head < tail) {
     current = queue[head];
-    // printf("current %d\n", current);
-    for (i = 0; i < nodes[current].degree; i++) {
-      if (visited[nodes[current].neighbors[i]] == -1) {
-        visited[nodes[current].neighbors[i]] = visited[current] + 1;
-        queue[tail++] = nodes[current].neighbors[i];
+    for (auto i = nodes[current].first_neighbor();
+         i != nodes[current].last_neighbor(); i++) {
+      if (visited[*i] == -1) {
+        visited[*i] = visited[current] + 1;
+        queue[tail++] = *i;
       }
     }
     head++;
@@ -267,7 +245,7 @@ int C_graph::returnFarthestNodeFrom(int id) {
 int C_graph::returnOptionality(int id, int *optional) {
   int *visited = new int[max_node + 1];
   int *queue = new int[max_node + 1];
-  int head, tail, current, i, j, n_optioanl;
+  int head, tail, current, j, n_optioanl;
   int n_common, c;
 
   // unvisited = -1!!!
@@ -279,11 +257,11 @@ int C_graph::returnOptionality(int id, int *optional) {
   visited[id] = 0;
   while (head < tail && visited[head] < 3) {
     current = queue[head];
-    // printf("current %d\n", current);
-    for (i = 0; i < nodes[current].degree; i++) {
-      if (visited[nodes[current].neighbors[i]] == -1) {
-        visited[nodes[current].neighbors[i]] = visited[current] + 1;
-        queue[tail++] = nodes[current].neighbors[i];
+    for (auto i = nodes[current].first_neighbor();
+         i != nodes[current].last_neighbor(); i++) {
+      if (visited[*i] == -1) {
+        visited[*i] = visited[current] + 1;
+        queue[tail++] = *i;
       }
     }
     head++;
@@ -314,7 +292,7 @@ int C_graph::returnOptionality(int id, int *optional) {
 int C_graph::returnOptionality(int id) {
   int *visited = new int[max_node + 1];
   int *queue = new int[max_node + 1];
-  int head, tail, current, i, j, n_optioanl;
+  int head, tail, current, j, n_optioanl;
   int n_common, c;
 
   // unvisited = -1!!!
@@ -326,11 +304,11 @@ int C_graph::returnOptionality(int id) {
   visited[id] = 0;
   while (head < tail && visited[head] < 3) {
     current = queue[head];
-    // printf("current %d\n", current);
-    for (i = 0; i < nodes[current].degree; i++) {
-      if (visited[nodes[current].neighbors[i]] == -1) {
-        visited[nodes[current].neighbors[i]] = visited[current] + 1;
-        queue[tail++] = nodes[current].neighbors[i];
+    for (auto i = nodes[current].first_neighbor();
+         i != nodes[current].last_neighbor(); i++) {
+      if (visited[*i] == -1) {
+        visited[*i] = visited[current] + 1;
+        queue[tail++] = *i;
       }
     }
     head++;

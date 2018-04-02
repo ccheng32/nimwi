@@ -1,5 +1,5 @@
 #include "C_graph.h"
-#define MAX_ID 80000
+#define MAX_ID 1000000
 
 C_graph::C_graph() {
   max_node = 0;

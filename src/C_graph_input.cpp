@@ -16,12 +16,6 @@ void C_graph::inputGraph(char file_name[]) {
 
   fclose(fp);
 
-  for (int i = 0; i <= max_node; i++) {
-    if (nodes[i].is_existed) {
-      qsort(nodes[i].neighbors, nodes[i].degree, sizeof(int), cmp);
-    }
-  }
-
   // initalize LCC values
   calculateAllNodeLCC();
 

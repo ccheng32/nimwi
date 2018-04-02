@@ -7,9 +7,7 @@ double C_graph::BUM(int k, char *output_file) {
   int current_max;
   FILE *fp;
 
-
   fp = fopen(output_file, "w");
-
 
   for (i = 1; i <= k; i++) {
     current_max = 0.0;

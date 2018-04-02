@@ -30,8 +30,6 @@ double C_graph::SIM(int k, char *output_file) {
 
     updateForAnNewEdge(v_m, v_a);
     addEdge(v_m, v_a);
-    qsort(nodes[v_m].neighbors, nodes[v_m].degree, sizeof(int), cmp);
-    qsort(nodes[v_a].neighbors, nodes[v_a].degree, sizeof(int), cmp);
 
     if (i % 100 == 0) {
       calculateAllNodeLCC();

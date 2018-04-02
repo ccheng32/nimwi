@@ -10,8 +10,8 @@ double C_graph::OISA(int k, char *output_file) {
 
   max_d = 0;
   for (id = 0; id <= max_node; id++) {
-    if (nodes[id].is_existed && nodes[id].degree > max_d) {
-      max_d = nodes[id].degree;
+    if (nodes[id].is_existed && nodes[id].degree() > max_d) {
+      max_d = nodes[id].degree();
     }
   }
 
@@ -26,9 +26,9 @@ double C_graph::OISA(int k, char *output_file) {
 
       if (nodes[id].is_existed && nodes[id].lcc >= l) {
         a = l;
-        b = 2 * l * nodes[id].degree - l;
-        c = (nodes[id].degree - 1) * nodes[id].degree *
-            (l * nodes[id].degree - nodes[id].lcc);
+        b = 2 * l * nodes[id].degree() - l;
+        c = (nodes[id].degree() - 1) * nodes[id].degree() *
+            (l * nodes[id].degree() - nodes[id].lcc);
 
         temp = sqrt(b * b - 4 * a * c);
 
